@@ -64,6 +64,13 @@
       background: #f3f3f3;
       border-radius: 10px;
       display: none;
+      line-height: 1.8;
+    }
+
+    .honmei {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 10px 0;
     }
   </style>
 </head>
@@ -93,27 +100,106 @@
   </div>
 
   <script>
+
+    const starNames = {
+      1: "一白水星",
+      2: "二黒土星",
+      3: "三碧木星",
+      4: "四緑木星",
+      5: "五黄土星",
+      6: "六白金星",
+      7: "七赤金星",
+      8: "八白土星",
+      9: "九紫火星"
+    };
+
+    function getHonmeiStar(dateString) {
+
+      const parts = dateString.split("-");
+      const year = Number(parts[0]);
+      const month = Number(parts[1]);
+      const day = Number(parts[2]);
+
+      /*
+        立春前後については、次の段階で
+        萬年暦と照合した正確な節入り判定を追加します。
+      */
+
+      if (
+        month === 1 ||
+        (month === 2 && day <= 5)
+      ) {
+        return {
+          status: "pending",
+          message: "立春前後の生年月日は、次の段階で正確な節入り判定を追加します。"
+        };
+      }
+
+      /*
+        2026年＝一白水星を基準に、
+        本命星は9年周期で循環します。
+      */
+
+      const offset = ((2026 - year) % 9 + 9) % 9;
+      const starNumber = offset + 1;
+
+      return {
+        status: "ok",
+        number: starNumber,
+        name: starNames[starNumber]
+      };
+    }
+
+
     function checkDirection() {
 
-      const birthday = document.getElementById("birthday").value;
-      const targetDate = document.getElementById("targetDate").value;
-      const result = document.getElementById("result");
+      const birthday =
+        document.getElementById("birthday").value;
+
+      const targetDate =
+        document.getElementById("targetDate").value;
+
+      const result =
+        document.getElementById("result");
 
       if (!birthday || !targetDate) {
+
         result.style.display = "block";
-        result.innerHTML = "生年月日と調べたい日を両方入力してください。";
+
+        result.innerHTML =
+          "生年月日と調べたい日を両方入力してください。";
+
         return;
       }
 
+      const honmei = getHonmeiStar(birthday);
+
       result.style.display = "block";
 
+      if (honmei.status === "pending") {
+
+        result.innerHTML = `
+          <strong>生年月日：</strong>${birthday}<br>
+          <strong>調べたい日：</strong>${targetDate}<br><br>
+          ${honmei.message}
+        `;
+
+        return;
+      }
+
       result.innerHTML = `
-        <strong>入力できました。</strong><br><br>
-        生年月日：${birthday}<br>
-        調べたい日：${targetDate}<br><br>
-        吉方位の計算機能は、これから追加します。
+        <strong>生年月日：</strong>${birthday}<br>
+
+        <strong>本命星：</strong>
+        <div class="honmei">${honmei.name}</div>
+
+        <strong>調べたい日：</strong>${targetDate}<br><br>
+
+        吉方位の計算機能は、
+        これから追加します。
       `;
     }
+
   </script>
 
 </body>
