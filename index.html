@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>吉方位を調べる</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 30px 15px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+    }
+
+    p {
+      text-align: center;
+      color: #555;
+    }
+
+    label {
+      display: block;
+      margin-top: 20px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 25px;
+      padding: 14px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 25px;
+      padding: 18px;
+      background: #f3f3f3;
+      border-radius: 10px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>吉方位を調べる</h1>
+
+    <p>
+      生年月日と調べたい日を入力してください
+    </p>
+
+    <label for="birthday">生年月日</label>
+    <input type="date" id="birthday">
+
+    <label for="targetDate">吉方位を調べたい日</label>
+    <input type="date" id="targetDate">
+
+    <button onclick="checkDirection()">
+      吉方位を調べる
+    </button>
+
+    <div id="result"></div>
+
+  </div>
+
+  <script>
+    function checkDirection() {
+
+      const birthday = document.getElementById("birthday").value;
+      const targetDate = document.getElementById("targetDate").value;
+      const result = document.getElementById("result");
+
+      if (!birthday || !targetDate) {
+        result.style.display = "block";
+        result.innerHTML = "生年月日と調べたい日を両方入力してください。";
+        return;
+      }
+
+      result.style.display = "block";
+
+      result.innerHTML = `
+        <strong>入力できました。</strong><br><br>
+        生年月日：${birthday}<br>
+        調べたい日：${targetDate}<br><br>
+        吉方位の計算機能は、これから追加します。
+      `;
+    }
+  </script>
+
+</body>
+</html>
