@@ -81,9 +81,7 @@
 
     <h1>吉方位を調べる</h1>
 
-    <p>
-      生年月日と調べたい日を入力してください
-    </p>
+    <p>生年月日と調べたい日を入力してください</p>
 
     <label for="birthday">生年月日</label>
     <input type="date" id="birthday">
@@ -99,108 +97,278 @@
 
   </div>
 
-  <script>
+<script>
 
-    const starNames = {
-      1: "一白水星",
-      2: "二黒土星",
-      3: "三碧木星",
-      4: "四緑木星",
-      5: "五黄土星",
-      6: "六白金星",
-      7: "七赤金星",
-      8: "八白土星",
-      9: "九紫火星"
-    };
+const starNames = {
+  1: "一白水星",
+  2: "二黒土星",
+  3: "三碧木星",
+  4: "四緑木星",
+  5: "五黄土星",
+  6: "六白金星",
+  7: "七赤金星",
+  8: "八白土星",
+  9: "九紫火星"
+};
 
-    function getHonmeiStar(dateString) {
 
-      const parts = dateString.split("-");
-      const year = Number(parts[0]);
-      const month = Number(parts[1]);
-      const day = Number(parts[2]);
+/* ------------------------------
+   日時 → ユリウス日
+------------------------------ */
 
-      /*
-        立春前後については、次の段階で
-        萬年暦と照合した正確な節入り判定を追加します。
-      */
+function toJulianDay(date) {
 
-      if (
-        month === 1 ||
-        (month === 2 && day <= 5)
-      ) {
-        return {
-          status: "pending",
-          message: "立春前後の生年月日は、次の段階で正確な節入り判定を追加します。"
-        };
-      }
+  let y = date.getUTCFullYear();
+  let m = date.getUTCMonth() + 1;
 
-      /*
-        2026年＝一白水星を基準に、
-        本命星は9年周期で循環します。
-      */
+  const d =
+    date.getUTCDate()
+    + date.getUTCHours() / 24
+    + date.getUTCMinutes() / 1440
+    + date.getUTCSeconds() / 86400;
 
-      const offset = ((2026 - year) % 9 + 9) % 9;
-      const starNumber = offset + 1;
+  if (m <= 2) {
+    y--;
+    m += 12;
+  }
 
-      return {
-        status: "ok",
-        number: starNumber,
-        name: starNames[starNumber]
-      };
+  const A = Math.floor(y / 100);
+  const B = 2 - A + Math.floor(A / 4);
+
+  return (
+    Math.floor(365.25 * (y + 4716))
+    + Math.floor(30.6001 * (m + 1))
+    + d + B - 1524.5
+  );
+}
+
+
+/* ------------------------------
+   太陽の視黄経を求める
+------------------------------ */
+
+function solarLongitude(date) {
+
+  const JD = toJulianDay(date);
+  const T = (JD - 2451545.0) / 36525;
+
+  let L0 =
+    280.46646
+    + T * (36000.76983 + T * 0.0003032);
+
+  L0 = ((L0 % 360) + 360) % 360;
+
+  const M =
+    357.52911
+    + T * (35999.05029 - 0.0001537 * T);
+
+  const rad = Math.PI / 180;
+
+  const C =
+    (1.914602 - T * (0.004817 + 0.000014 * T))
+      * Math.sin(M * rad)
+    + (0.019993 - 0.000101 * T)
+      * Math.sin(2 * M * rad)
+    + 0.000289
+      * Math.sin(3 * M * rad);
+
+  const trueLongitude = L0 + C;
+
+  const omega =
+    125.04 - 1934.136 * T;
+
+  let longitude =
+    trueLongitude
+    - 0.00569
+    - 0.00478 * Math.sin(omega * rad);
+
+  longitude =
+    ((longitude % 360) + 360) % 360;
+
+  return longitude;
+}
+
+
+/* ------------------------------
+   角度差
+------------------------------ */
+
+function angleDifference(angle, target) {
+
+  return (
+    ((angle - target + 540) % 360) - 180
+  );
+}
+
+
+/* ------------------------------
+   その年の立春日時を求める
+   立春＝太陽黄経315°
+------------------------------ */
+
+function getRisshun(year) {
+
+  let start =
+    new Date(Date.UTC(year, 1, 1, 0, 0, 0));
+
+  let end =
+    new Date(Date.UTC(year, 1, 7, 0, 0, 0));
+
+  for (let i = 0; i < 50; i++) {
+
+    const middle =
+      new Date(
+        (start.getTime() + end.getTime()) / 2
+      );
+
+    const diff =
+      angleDifference(
+        solarLongitude(middle),
+        315
+      );
+
+    if (diff < 0) {
+      start = middle;
+    } else {
+      end = middle;
     }
+  }
+
+  return end;
+}
 
 
-    function checkDirection() {
+/* ------------------------------
+   日本時間で立春の日付を取得
+------------------------------ */
 
-      const birthday =
-        document.getElementById("birthday").value;
+function getRisshunDateJST(year) {
 
-      const targetDate =
-        document.getElementById("targetDate").value;
+  const risshun = getRisshun(year);
 
-      const result =
-        document.getElementById("result");
+  const jst =
+    new Date(
+      risshun.getTime()
+      + 9 * 60 * 60 * 1000
+    );
 
-      if (!birthday || !targetDate) {
+  return {
+    year: jst.getUTCFullYear(),
+    month: jst.getUTCMonth() + 1,
+    day: jst.getUTCDate()
+  };
+}
 
-        result.style.display = "block";
 
-        result.innerHTML =
-          "生年月日と調べたい日を両方入力してください。";
+/* ------------------------------
+   本命星判定
+------------------------------ */
 
-        return;
-      }
+function getHonmeiStar(dateString) {
 
-      const honmei = getHonmeiStar(birthday);
+  const parts =
+    dateString.split("-");
 
-      result.style.display = "block";
+  let year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
 
-      if (honmei.status === "pending") {
+  const risshun =
+    getRisshunDateJST(year);
 
-        result.innerHTML = `
-          <strong>生年月日：</strong>${birthday}<br>
-          <strong>調べたい日：</strong>${targetDate}<br><br>
-          ${honmei.message}
-        `;
+  /*
+    立春の日より前なら
+    前年として本命星を計算
+  */
 
-        return;
-      }
+  if (
+    month < risshun.month ||
+    (
+      month === risshun.month
+      && day < risshun.day
+    )
+  ) {
+    year--;
+  }
 
-      result.innerHTML = `
-        <strong>生年月日：</strong>${birthday}<br>
+  /*
+    2026年＝一白水星を基準に
+    9年周期で計算
+  */
 
-        <strong>本命星：</strong>
-        <div class="honmei">${honmei.name}</div>
+  const offset =
+    ((2026 - year) % 9 + 9) % 9;
 
-        <strong>調べたい日：</strong>${targetDate}<br><br>
+  const starNumber =
+    offset + 1;
 
-        吉方位の計算機能は、
-        これから追加します。
-      `;
-    }
+  return {
+    number: starNumber,
+    name: starNames[starNumber],
+    risshun: risshun
+  };
+}
 
-  </script>
+
+/* ------------------------------
+   ボタン処理
+------------------------------ */
+
+function checkDirection() {
+
+  const birthday =
+    document.getElementById("birthday").value;
+
+  const targetDate =
+    document.getElementById("targetDate").value;
+
+  const result =
+    document.getElementById("result");
+
+  if (!birthday || !targetDate) {
+
+    result.style.display = "block";
+
+    result.innerHTML =
+      "生年月日と調べたい日を両方入力してください。";
+
+    return;
+  }
+
+  const honmei =
+    getHonmeiStar(birthday);
+
+  result.style.display = "block";
+
+  result.innerHTML = `
+
+    <strong>生年月日：</strong>
+    ${birthday}<br>
+
+    <strong>本命星：</strong>
+
+    <div class="honmei">
+      ${honmei.name}
+    </div>
+
+    <strong>その年の立春：</strong>
+    ${honmei.risshun.month}月
+    ${honmei.risshun.day}日
+
+    <br><br>
+
+    <strong>調べたい日：</strong>
+    ${targetDate}
+
+    <br><br>
+
+    吉方位の計算機能は、
+    これから追加します。
+
+  `;
+}
+
+</script>
 
 </body>
-</html>
+</html>  
