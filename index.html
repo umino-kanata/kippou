@@ -12,6 +12,7 @@ body {
   margin: 0;
   padding: 30px 15px;
 }
+
 .container {
   max-width: 500px;
   margin: 0 auto;
@@ -20,54 +21,69 @@ body {
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
-h1 { text-align:center; font-size:28px; }
-p { text-align:center; color:#555; }
+
+h1 {
+  text-align: center;
+  font-size: 28px;
+}
+
+p {
+  text-align: center;
+  color: #555;
+}
+
 label {
-  display:block;
-  margin-top:20px;
-  margin-bottom:6px;
-  font-weight:bold;
+  display: block;
+  margin-top: 20px;
+  margin-bottom: 6px;
+  font-weight: bold;
 }
+
 input {
-  width:100%;
-  box-sizing:border-box;
-  padding:12px;
-  font-size:16px;
-  border:1px solid #ccc;
-  border-radius:8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
+
 button {
-  width:100%;
-  margin-top:25px;
-  padding:14px;
-  font-size:18px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
+  width: 100%;
+  margin-top: 25px;
+  padding: 14px;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
 }
+
 #result {
-  margin-top:25px;
-  padding:18px;
-  background:#f3f3f3;
-  border-radius:10px;
-  display:none;
-  line-height:1.8;
+  margin-top: 25px;
+  padding: 18px;
+  background: #f3f3f3;
+  border-radius: 10px;
+  display: none;
+  line-height: 1.8;
 }
+
 .honmei {
-  font-size:24px;
-  font-weight:bold;
-  margin:8px 0 16px;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 8px 0 16px;
 }
+
 .data-box {
-  margin-top:18px;
-  padding:15px;
-  background:white;
-  border-radius:10px;
+  margin-top: 18px;
+  padding: 15px;
+  background: white;
+  border-radius: 10px;
 }
+
 .data-title {
-  font-size:20px;
-  font-weight:bold;
-  margin-bottom:8px;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
 }
 </style>
 </head>
@@ -76,41 +92,47 @@ button {
 
 <div class="container">
 
-<h1>吉方位を調べる</h1>
-<p>生年月日と調べたい日を入力してください</p>
+  <h1>吉方位を調べる</h1>
 
-<label for="birthday">生年月日</label>
-<input type="date" id="birthday">
+  <p>生年月日と調べたい日を入力してください</p>
 
-<label for="targetDate">吉方位を調べたい日</label>
-<input type="date" id="targetDate">
+  <label for="birthday">生年月日</label>
+  <input type="date" id="birthday">
 
-<button onclick="checkDirection()">吉方位を調べる</button>
+  <label for="targetDate">吉方位を調べたい日</label>
+  <input type="date" id="targetDate">
 
-<div id="result"></div>
+  <button onclick="checkDirection()">
+    吉方位を調べる
+  </button>
+
+  <div id="result"></div>
 
 </div>
 
 <script>
 
 const starNames = {
-  1:"一白水星",
-  2:"二黒土星",
-  3:"三碧木星",
-  4:"四緑木星",
-  5:"五黄土星",
-  6:"六白金星",
-  7:"七赤金星",
-  8:"八白土星",
-  9:"九紫火星"
+  1: "一白水星",
+  2: "二黒土星",
+  3: "三碧木星",
+  4: "四緑木星",
+  5: "五黄土星",
+  6: "六白金星",
+  7: "七赤金星",
+  8: "八白土星",
+  9: "九紫火星"
 };
 
-const stems =
-["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+const stems = [
+  "甲","乙","丙","丁","戊",
+  "己","庚","辛","壬","癸"
+];
 
-const branches =
-["子","丑","寅","卯","辰","巳",
- "午","未","申","酉","戌","亥"];
+const branches = [
+  "子","丑","寅","卯","辰","巳",
+  "午","未","申","酉","戌","亥"
+];
 
 
 /* ---------- ユリウス日 ---------- */
@@ -118,99 +140,104 @@ const branches =
 function toJulianDay(date) {
 
   let y = date.getUTCFullYear();
-  let m = date.getUTCMonth()+1;
+  let m = date.getUTCMonth() + 1;
 
   const d =
     date.getUTCDate()
-    + date.getUTCHours()/24
-    + date.getUTCMinutes()/1440
-    + date.getUTCSeconds()/86400;
+    + date.getUTCHours() / 24
+    + date.getUTCMinutes() / 1440
+    + date.getUTCSeconds() / 86400;
 
-  if(m<=2){
+  if (m <= 2) {
     y--;
-    m+=12;
+    m += 12;
   }
 
-  const A=Math.floor(y/100);
-  const B=2-A+Math.floor(A/4);
+  const A = Math.floor(y / 100);
+  const B = 2 - A + Math.floor(A / 4);
 
-  return Math.floor(365.25*(y+4716))
-    +Math.floor(30.6001*(m+1))
-    +d+B-1524.5;
+  return (
+    Math.floor(365.25 * (y + 4716))
+    + Math.floor(30.6001 * (m + 1))
+    + d + B - 1524.5
+  );
 }
 
 
 /* ---------- 太陽黄経 ---------- */
 
-function solarLongitude(date){
+function solarLongitude(date) {
 
-  const JD=toJulianDay(date);
-  const T=(JD-2451545.0)/36525;
+  const JD = toJulianDay(date);
+  const T = (JD - 2451545.0) / 36525;
 
-  let L0=
-    280.46646+
-    T*(36000.76983+T*0.0003032);
+  let L0 =
+    280.46646
+    + T * (36000.76983 + T * 0.0003032);
 
-  L0=((L0%360)+360)%360;
+  L0 = ((L0 % 360) + 360) % 360;
 
-  const M=
-    357.52911+
-    T*(35999.05029-0.0001537*T);
+  const M =
+    357.52911
+    + T * (35999.05029 - 0.0001537 * T);
 
-  const rad=Math.PI/180;
+  const rad = Math.PI / 180;
 
-  const C=
-    (1.914602-T*(0.004817+0.000014*T))
-      *Math.sin(M*rad)
-    +(0.019993-0.000101*T)
-      *Math.sin(2*M*rad)
-    +0.000289*Math.sin(3*M*rad);
+  const C =
+    (1.914602 - T * (0.004817 + 0.000014 * T))
+      * Math.sin(M * rad)
+    + (0.019993 - 0.000101 * T)
+      * Math.sin(2 * M * rad)
+    + 0.000289 * Math.sin(3 * M * rad);
 
-  const trueLongitude=L0+C;
+  const trueLongitude = L0 + C;
 
-  const omega=125.04-1934.136*T;
+  const omega =
+    125.04 - 1934.136 * T;
 
-  let longitude=
+  let longitude =
     trueLongitude
-    -0.00569
-    -0.00478*Math.sin(omega*rad);
+    - 0.00569
+    - 0.00478 * Math.sin(omega * rad);
 
-  return ((longitude%360)+360)%360;
+  return ((longitude % 360) + 360) % 360;
 }
 
 
-function angleDifference(angle,target){
-  return ((angle-target+540)%360)-180;
+/* ---------- 角度差 ---------- */
+
+function angleDifference(angle, target) {
+  return ((angle - target + 540) % 360) - 180;
 }
 
 
 /* ---------- 指定黄経になる日時 ---------- */
 
-function getSolarTerm(year, month, targetAngle){
+function getSolarTerm(year, month, targetAngle) {
 
-  let start=
-    new Date(Date.UTC(year,month-1,1));
+  let start =
+    new Date(Date.UTC(year, month - 1, 1));
 
-  let end=
-    new Date(Date.UTC(year,month-1,12));
+  let end =
+    new Date(Date.UTC(year, month - 1, 12));
 
-  for(let i=0;i<50;i++){
+  for (let i = 0; i < 50; i++) {
 
-    const middle=
+    const middle =
       new Date(
-        (start.getTime()+end.getTime())/2
+        (start.getTime() + end.getTime()) / 2
       );
 
-    const diff=
+    const diff =
       angleDifference(
         solarLongitude(middle),
         targetAngle
       );
 
-    if(diff<0){
-      start=middle;
-    }else{
-      end=middle;
+    if (diff < 0) {
+      start = middle;
+    } else {
+      end = middle;
     }
   }
 
@@ -220,154 +247,152 @@ function getSolarTerm(year, month, targetAngle){
 
 /* ---------- 日本時間の日付 ---------- */
 
-function getSolarTermDateJST(year,month,angle){
+function getSolarTermDateJST(year, month, angle) {
 
-  const term=getSolarTerm(year,month,angle);
+  const term =
+    getSolarTerm(year, month, angle);
 
-  const jst=
+  const jst =
     new Date(
-      term.getTime()+9*60*60*1000
+      term.getTime()
+      + 9 * 60 * 60 * 1000
     );
 
   return {
-    year:jst.getUTCFullYear(),
-    month:jst.getUTCMonth()+1,
-    day:jst.getUTCDate()
+    year: jst.getUTCFullYear(),
+    month: jst.getUTCMonth() + 1,
+    day: jst.getUTCDate()
   };
 }
 
 
 /* ---------- 立春 ---------- */
 
-function getRisshunDateJST(year){
-  return getSolarTermDateJST(year,2,315);
+function getRisshunDateJST(year) {
+  return getSolarTermDateJST(year, 2, 315);
 }
 
 
 /* ---------- 年の切替 ---------- */
 
-function getEffectiveYear(dateString){
+function getEffectiveYear(dateString) {
 
-  const p=dateString.split("-");
+  const p = dateString.split("-");
 
-  let year=Number(p[0]);
-  const month=Number(p[1]);
-  const day=Number(p[2]);
+  let year = Number(p[0]);
+  const month = Number(p[1]);
+  const day = Number(p[2]);
 
-  const risshun=getRisshunDateJST(year);
+  const risshun =
+    getRisshunDateJST(year);
 
-  if(
-    month<risshun.month ||
-    (month===risshun.month && day<risshun.day)
-  ){
+  if (
+    month < risshun.month ||
+    (
+      month === risshun.month
+      && day < risshun.day
+    )
+  ) {
     year--;
   }
 
   return {
-    year:year,
-    risshun:risshun
+    year: year,
+    risshun: risshun
   };
 }
 
 
 /* ---------- 年盤九星 ---------- */
 
-function getYearStar(year){
+function getYearStar(year) {
 
-  const offset=
-    ((2026-year)%9+9)%9;
+  const offset =
+    ((2026 - year) % 9 + 9) % 9;
 
-  const number=offset+1;
+  const number =
+    offset + 1;
 
   return {
-    number:number,
-    name:starNames[number]
+    number: number,
+    name: starNames[number]
   };
 }
 
 
 /* ---------- 年干支 ---------- */
 
-function getYearKanshi(year){
+function getYearKanshi(year) {
 
-  const s=((year-1984)%10+10)%10;
-  const b=((year-1984)%12+12)%12;
+  const s =
+    ((year - 1984) % 10 + 10) % 10;
+
+  const b =
+    ((year - 1984) % 12 + 12) % 12;
 
   return {
-    stem:stems[s],
-    branch:branches[b],
-    name:stems[s]+branches[b]
+    stem: stems[s],
+    branch: branches[b],
+    name: stems[s] + branches[b]
   };
 }
 
 
 /* ---------- 本命星 ---------- */
 
-function getHonmeiStar(dateString){
+function getHonmeiStar(dateString) {
 
-  const e=getEffectiveYear(dateString);
+  const e =
+    getEffectiveYear(dateString);
+
   return getYearStar(e.year);
 }
 
 
 /* ---------- 年盤 ---------- */
 
-function getTargetYearData(dateString){
+function getTargetYearData(dateString) {
 
-  const e=getEffectiveYear(dateString);
+  const e =
+    getEffectiveYear(dateString);
 
   return {
-    year:e.year,
-    star:getYearStar(e.year),
-    kanshi:getYearKanshi(e.year)
+    year: e.year,
+    star: getYearStar(e.year),
+    kanshi: getYearKanshi(e.year)
   };
 }
 
 
-/* --------------------------------
-   月の節入り
-
-   2月 315° 立春
-   3月 345° 啓蟄
-   4月  15° 清明
-   5月  45° 立夏
-   6月  75° 芒種
-   7月 105° 小暑
-   8月 135° 立秋
-   9月 165° 白露
-  10月 195° 寒露
-  11月 225° 立冬
-  12月 255° 大雪
-   1月 285° 小寒
--------------------------------- */
+/* ---------- 月の節入り角度 ---------- */
 
 const monthAngles = {
-  1:285,
-  2:315,
-  3:345,
-  4:15,
-  5:45,
-  6:75,
-  7:105,
-  8:135,
-  9:165,
-  10:195,
-  11:225,
-  12:255
+  1: 285,
+  2: 315,
+  3: 345,
+  4: 15,
+  5: 45,
+  6: 75,
+  7: 105,
+  8: 135,
+  9: 165,
+  10: 195,
+  11: 225,
+  12: 255
 };
 
 
-/* ---------- 節月を判定 ---------- */
+/* ---------- 節月判定 ---------- */
 
-function getSetsuMonth(dateString){
+function getSetsuMonth(dateString) {
 
-  const p=dateString.split("-");
+  const p = dateString.split("-");
 
-  const year=Number(p[0]);
-  const month=Number(p[1]);
-  const day=Number(p[2]);
+  const year = Number(p[0]);
+  const month = Number(p[1]);
+  const day = Number(p[2]);
 
-  const term=
+  const term =
     getSolarTermDateJST(
       year,
       month,
@@ -375,204 +400,217 @@ function getSetsuMonth(dateString){
     );
 
   let setsuMonth;
+  let setsuYear;
 
-  if(day>=term.day){
-    setsuMonth=month;
-  }else{
-    setsuMonth=month-1;
-    if(setsuMonth===0){
-      setsuMonth=12;
+  if (day >= term.day) {
+
+    setsuMonth = month;
+
+    if (month === 1) {
+      setsuYear = year - 1;
+    } else {
+      setsuYear = year;
+    }
+
+  } else {
+
+    if (month === 1) {
+
+      setsuMonth = 12;
+      setsuYear = year - 1;
+
+    } else if (month === 2) {
+
+      setsuMonth = 1;
+      setsuYear = year - 1;
+
+    } else {
+
+      setsuMonth = month - 1;
+      setsuYear = year;
     }
   }
 
   return {
-    setsuMonth:setsuMonth,
-    term:term
+    setsuMonth: setsuMonth,
+    setsuYear: setsuYear,
+    term: term
   };
 }
 
 
 /* ---------- 月盤九星 ---------- */
 
-function getMonthKanshi(dateString){
+function getMonthStar(dateString) {
 
-  const setsu=getSetsuMonth(dateString);
+  const setsu =
+    getSetsuMonth(dateString);
 
-  const effectiveYear=setsu.setsuYear;
+  const effectiveYear =
+    setsu.setsuYear;
 
-  const yearStem=
-    getYearKanshi(effectiveYear).stem;
+  const yearStar =
+    getYearStar(effectiveYear).number;
 
-  const yearStemIndex=
-    stems.indexOf(yearStem);
+  let febStar;
 
   /*
-    寅月の月干
-
-    甲・己年 → 丙
-    乙・庚年 → 戊
-    丙・辛年 → 庚
-    丁・壬年 → 壬
-    戊・癸年 → 甲
+    一四七年 → 寅月は八白
+    二五八年 → 寅月は二黒
+    三六九年 → 寅月は五黄
   */
 
-  const febStemStart = {
-    0:2,
-    5:2,
-    1:4,
-    6:4,
-    2:6,
-    7:6,
-    3:8,
-    8:8,
-    4:0,
-    9:0
-  };
+  if ([1,4,7].includes(yearStar)) {
+
+    febStar = 8;
+
+  } else if ([2,5,8].includes(yearStar)) {
+
+    febStar = 2;
+
+  } else {
+
+    febStar = 5;
+  }
 
   let distance;
 
-  if(setsu.setsuMonth>=2){
-    distance=setsu.setsuMonth-2;
-  }else{
-    distance=11;
+  if (setsu.setsuMonth >= 2) {
+
+    distance =
+      setsu.setsuMonth - 2;
+
+  } else {
+
+    distance = 11;
   }
 
-  const stemIndex=
-    (febStemStart[yearStemIndex]+distance)%10;
+  let number =
+    febStar - distance;
 
-  const branchIndex=
-    (2+distance)%12;
+  while (number <= 0) {
+    number += 9;
+  }
 
   return {
-    stem:stems[stemIndex],
-    branch:branches[branchIndex],
-    name:
-      stems[stemIndex]+
-      branches[branchIndex]
+    number: number,
+    name: starNames[number]
   };
 }
 
+
 /* ---------- 月干支 ---------- */
 
-function getMonthKanshi(dateString){
+function getMonthKanshi(dateString) {
 
-  const p=dateString.split("-");
-  const calendarYear=Number(p[0]);
+  const setsu =
+    getSetsuMonth(dateString);
 
-  const setsu=getSetsuMonth(dateString);
+  const effectiveYear =
+    setsu.setsuYear;
 
-  let effectiveYear=calendarYear;
-
-  if(setsu.setsuMonth===1){
-    effectiveYear=calendarYear-1;
-  }
-
-  const yearStem=
+  const yearStem =
     getYearKanshi(effectiveYear).stem;
 
-  const yearStemIndex=
+  const yearStemIndex =
     stems.indexOf(yearStem);
 
-  /*
-    寅月（2月）の月干
-
-    甲・己年 → 丙
-    乙・庚年 → 戊
-    丙・辛年 → 庚
-    丁・壬年 → 壬
-    戊・癸年 → 甲
-  */
-
   const febStemStart = {
-    0:2,
-    5:2,
-    1:4,
-    6:4,
-    2:6,
-    7:6,
-    3:8,
-    8:8,
-    4:0,
-    9:0
+    0: 2,
+    5: 2,
+    1: 4,
+    6: 4,
+    2: 6,
+    7: 6,
+    3: 8,
+    8: 8,
+    4: 0,
+    9: 0
   };
 
   let distance;
 
-  if(setsu.setsuMonth>=2){
-    distance=setsu.setsuMonth-2;
-  }else{
-    distance=11;
+  if (setsu.setsuMonth >= 2) {
+
+    distance =
+      setsu.setsuMonth - 2;
+
+  } else {
+
+    distance = 11;
   }
 
-  const stemIndex=
-    (febStemStart[yearStemIndex]+distance)%10;
+  const stemIndex =
+    (
+      febStemStart[yearStemIndex]
+      + distance
+    ) % 10;
 
-  /*
-    2月＝寅、3月＝卯……
-  */
-
-  const branchIndex=
-    (2+distance)%12;
+  const branchIndex =
+    (2 + distance) % 12;
 
   return {
-    stem:stems[stemIndex],
-    branch:branches[branchIndex],
+    stem: stems[stemIndex],
+    branch: branches[branchIndex],
     name:
-      stems[stemIndex]+
-      branches[branchIndex]
+      stems[stemIndex]
+      + branches[branchIndex]
   };
 }
 
 
 /* ---------- 月盤データ ---------- */
 
-function getTargetMonthData(dateString){
+function getTargetMonthData(dateString) {
 
-  const setsu=getSetsuMonth(dateString);
+  const setsu =
+    getSetsuMonth(dateString);
 
   return {
-    setsuMonth:setsu.setsuMonth,
-    term:setsu.term,
-    star:getMonthStar(dateString),
-    kanshi:getMonthKanshi(dateString)
+    setsuMonth: setsu.setsuMonth,
+    setsuYear: setsu.setsuYear,
+    term: setsu.term,
+    star: getMonthStar(dateString),
+    kanshi: getMonthKanshi(dateString)
   };
 }
 
 
 /* ---------- 表示 ---------- */
 
-function checkDirection(){
+function checkDirection() {
 
-  const birthday=
+  const birthday =
     document.getElementById("birthday").value;
 
-  const targetDate=
+  const targetDate =
     document.getElementById("targetDate").value;
 
-  const result=
+  const result =
     document.getElementById("result");
 
-  if(!birthday || !targetDate){
+  if (!birthday || !targetDate) {
 
-    result.style.display="block";
-    result.innerHTML=
+    result.style.display = "block";
+
+    result.innerHTML =
       "生年月日と調べたい日を両方入力してください。";
 
     return;
   }
 
-  const honmei=
+  const honmei =
     getHonmeiStar(birthday);
 
-  const yearData=
+  const yearData =
     getTargetYearData(targetDate);
 
-  const monthData=
+  const monthData =
     getTargetMonthData(targetDate);
 
-  result.style.display="block";
+  result.style.display = "block";
 
-  result.innerHTML=`
+  result.innerHTML = `
 
     <strong>生年月日：</strong>
     ${birthday}<br>
@@ -582,7 +620,6 @@ function checkDirection(){
     <div class="honmei">
       ${honmei.name}
     </div>
-
 
     <div class="data-box">
 
@@ -597,7 +634,6 @@ function checkDirection(){
       ${yearData.kanshi.name}
 
     </div>
-
 
     <div class="data-box">
 
