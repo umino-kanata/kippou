@@ -558,6 +558,168 @@ function getMonthKanshi(dateString) {
   };
 }
 
+ /* ---------- 日盤 ---------- */
+
+/*
+  日干支の基準日
+  2026/6/19 ＝ 甲子
+
+  日盤九星の切替
+  陰遁開始日は九紫から下降
+  陽遁開始日は一白から上昇
+*/
+
+const dayStarTransitions = [
+  { date: "2026-06-19", mode: "陰遁", startStar: 9 },
+  { date: "2026-12-16", mode: "陽遁", startStar: 1 },
+
+  { date: "2027-06-14", mode: "陰遁", startStar: 9 },
+  { date: "2027-12-11", mode: "陽遁", startStar: 1 },
+
+  { date: "2028-06-08", mode: "陰遁", startStar: 9 },
+  { date: "2028-12-05", mode: "陽遁", startStar: 1 }
+];
+
+
+/* ---------- 日付を日数に変換 ---------- */
+
+function dateStringToDayNumber(dateString) {
+
+  const p = dateString.split("-");
+
+  const year = Number(p[0]);
+  const month = Number(p[1]);
+  const day = Number(p[2]);
+
+  return Math.floor(
+    Date.UTC(year, month - 1, day)
+    / 86400000
+  );
+}
+
+
+/* ---------- 2つの日付の日数差 ---------- */
+
+function getDayDifference(fromDate, toDate) {
+
+  return (
+    dateStringToDayNumber(toDate)
+    - dateStringToDayNumber(fromDate)
+  );
+}
+
+
+/* ---------- 日干支 ---------- */
+
+function getDayKanshi(dateString) {
+
+  const baseDate = "2026-06-19";
+
+  const diff =
+    getDayDifference(baseDate, dateString);
+
+  const index =
+    ((diff % 60) + 60) % 60;
+
+  const stemIndex =
+    index % 10;
+
+  const branchIndex =
+    index % 12;
+
+  return {
+    stem: stems[stemIndex],
+    branch: branches[branchIndex],
+    name:
+      stems[stemIndex]
+      + branches[branchIndex]
+  };
+}
+
+
+/* ---------- その日の遁を判定 ---------- */
+
+function getDayTransition(dateString) {
+
+  let transition = null;
+
+  for (const item of dayStarTransitions) {
+
+    if (dateString >= item.date) {
+      transition = item;
+    } else {
+      break;
+    }
+  }
+
+  return transition;
+}
+
+
+/* ---------- 日盤九星 ---------- */
+
+function getDayStar(dateString) {
+
+  const transition =
+    getDayTransition(dateString);
+
+  if (!transition) {
+    return null;
+  }
+
+  const diff =
+    getDayDifference(
+      transition.date,
+      dateString
+    );
+
+  let number;
+
+  if (transition.mode === "陽遁") {
+
+    number =
+      ((transition.startStar - 1 + diff) % 9) + 1;
+
+  } else {
+
+    number =
+      transition.startStar - (diff % 9);
+
+    while (number <= 0) {
+      number += 9;
+    }
+  }
+
+  return {
+    number: number,
+    name: starNames[number],
+    mode: transition.mode
+  };
+}
+
+
+/* ---------- 日盤データ ---------- */
+
+function getTargetDayData(dateString) {
+
+  const startDate = "2026-06-19";
+  const endDate = "2028-12-31";
+
+  if (
+    dateString < startDate ||
+    dateString > endDate
+  ) {
+    return {
+      supported: false
+    };
+  }
+
+  return {
+    supported: true,
+    star: getDayStar(dateString),
+    kanshi: getDayKanshi(dateString)
+  };
+} 
 
 /* ---------- 月盤データ ---------- */
 
@@ -607,6 +769,9 @@ function checkDirection() {
 
   const monthData =
     getTargetMonthData(targetDate);
+ 
+  const dayData =
+  getTargetDayData(targetDate);
 
   result.style.display = "block";
 
@@ -653,6 +818,31 @@ function checkDirection() {
 
     </div>
 
+    <div class="data-box">
+
+      <div class="data-title">
+        日盤
+      </div>
+
+      ${
+        dayData.supported
+        ? `
+          <strong>九星：</strong>
+          ${dayData.star.name}<br>
+
+          <strong>干支：</strong>
+          ${dayData.kanshi.name}<br>
+
+          <strong>遁：</strong>
+          ${dayData.star.mode}
+        `
+        : `
+          この日の日盤は、
+          現在のプロトタイプの対応範囲外です。
+        `
+      }
+
+    </div>
     <br>
 
     吉方位の計算機能は、
