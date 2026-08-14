@@ -363,7 +363,357 @@ function getTargetYearData(dateString) {
   };
 }
 
+/* ---------- 方位判定の基本データ ---------- */
 
+const directions = [
+  "東",
+  "南東",
+  "南",
+  "南西",
+  "西",
+  "北西",
+  "北",
+  "北東"
+];
+
+
+/* 反対方位 */
+
+const oppositeDirection = {
+  "東": "西",
+  "南東": "北西",
+  "南": "北",
+  "南西": "北東",
+  "西": "東",
+  "北西": "南東",
+  "北": "南",
+  "北東": "南西"
+};
+
+
+/*
+  中宮の九星から、
+  各方位に回る九星を求める
+*/
+
+const directionStars = {
+
+  1: {
+    "東": 8,
+    "南東": 9,
+    "南": 5,
+    "南西": 7,
+    "西": 3,
+    "北西": 2,
+    "北": 6,
+    "北東": 4
+  },
+
+  2: {
+    "東": 9,
+    "南東": 1,
+    "南": 6,
+    "南西": 8,
+    "西": 4,
+    "北西": 3,
+    "北": 7,
+    "北東": 5
+  },
+
+  3: {
+    "東": 1,
+    "南東": 2,
+    "南": 7,
+    "南西": 9,
+    "西": 5,
+    "北西": 4,
+    "北": 8,
+    "北東": 6
+  },
+
+  4: {
+    "東": 2,
+    "南東": 3,
+    "南": 8,
+    "南西": 1,
+    "西": 6,
+    "北西": 5,
+    "北": 9,
+    "北東": 7
+  },
+
+  5: {
+    "東": 3,
+    "南東": 4,
+    "南": 9,
+    "南西": 2,
+    "西": 7,
+    "北西": 6,
+    "北": 1,
+    "北東": 8
+  },
+
+  6: {
+    "東": 4,
+    "南東": 5,
+    "南": 1,
+    "南西": 3,
+    "西": 8,
+    "北西": 7,
+    "北": 2,
+    "北東": 9
+  },
+
+  7: {
+    "東": 5,
+    "南東": 6,
+    "南": 2,
+    "南西": 4,
+    "西": 9,
+    "北西": 8,
+    "北": 3,
+    "北東": 1
+  },
+
+  8: {
+    "東": 6,
+    "南東": 7,
+    "南": 3,
+    "南西": 5,
+    "西": 1,
+    "北西": 9,
+    "北": 4,
+    "北東": 2
+  },
+
+  9: {
+    "東": 7,
+    "南東": 8,
+    "南": 4,
+    "南西": 6,
+    "西": 2,
+    "北西": 1,
+    "北": 5,
+    "北東": 3
+  }
+
+};
+
+
+/* ---------- 九星の五行 ---------- */
+
+const starElements = {
+  1: "水",
+  2: "土",
+  3: "木",
+  4: "木",
+  5: "土",
+  6: "金",
+  7: "金",
+  8: "土",
+  9: "火"
+};
+
+
+/*
+  五行の相生
+  木 → 火 → 土 → 金 → 水 → 木
+*/
+
+const produces = {
+  "木": "火",
+  "火": "土",
+  "土": "金",
+  "金": "水",
+  "水": "木"
+};
+
+
+/*
+  本命星に対して
+  吉となる九星か
+*/
+
+function isLuckyStar(honmeiNumber, starNumber) {
+
+  const honmeiElement =
+    starElements[honmeiNumber];
+
+  const starElement =
+    starElements[starNumber];
+
+  // 和気
+  if (honmeiElement === starElement) {
+    return true;
+  }
+
+  // 生気
+  if (produces[starElement] === honmeiElement) {
+    return true;
+  }
+
+  // 退気
+  if (produces[honmeiElement] === starElement) {
+    return true;
+  }
+
+  return false;
+}
+
+
+/* ---------- 十二支の方位 ---------- */
+
+const branchDirections = {
+  "子": "北",
+  "丑": "北東",
+  "寅": "北東",
+  "卯": "東",
+  "辰": "南東",
+  "巳": "南東",
+  "午": "南",
+  "未": "南西",
+  "申": "南西",
+  "酉": "西",
+  "戌": "北西",
+  "亥": "北西"
+};
+
+
+/* ---------- 年盤の〇方位 ---------- */
+
+/* ---------- 1つの盤の方位状態を判定 ---------- */
+
+function getDirectionStatuses(
+  honmeiNumber,
+  centerStarNumber,
+  branch
+) {
+
+  const stars =
+    directionStars[centerStarNumber];
+
+  const result = {};
+
+  let gokouDirection = null;
+  let honmeiDirection = null;
+
+
+  /*
+    五黄の方位と
+    本命星の方位を探す
+  */
+
+  for (const direction of directions) {
+
+    if (stars[direction] === 5) {
+      gokouDirection = direction;
+    }
+
+    if (stars[direction] === honmeiNumber) {
+      honmeiDirection = direction;
+    }
+  }
+
+
+  /*
+    暗剣殺
+    本命的殺
+  */
+
+  const ankenDirection =
+    gokouDirection
+      ? oppositeDirection[gokouDirection]
+      : null;
+
+  const honmeiTekiDirection =
+    honmeiDirection
+      ? oppositeDirection[honmeiDirection]
+      : null;
+
+
+  /*
+    破
+    その盤の干支の反対方向
+  */
+
+  const branchDirection =
+    branchDirections[branch];
+
+  const haDirection =
+    oppositeDirection[branchDirection];
+
+
+  /*
+    8方位を順番に判定
+  */
+
+  for (const direction of directions) {
+
+    const starNumber =
+      stars[direction];
+
+
+    /*
+      強い凶
+      五黄殺・暗剣殺・本命殺・
+      本命的殺・破
+    */
+
+    if (
+      direction === gokouDirection ||
+      direction === ankenDirection ||
+      direction === honmeiDirection ||
+      direction === honmeiTekiDirection ||
+      direction === haDirection
+    ) {
+
+      result[direction] = "×";
+      continue;
+    }
+
+
+    /*
+      相生・和気なら吉
+    */
+
+    if (
+      isLuckyStar(
+        honmeiNumber,
+        starNumber
+      )
+    ) {
+
+      result[direction] = "〇";
+
+    } else {
+
+      /*
+        現段階では普通の凶も
+        吉方候補から除外する
+      */
+
+      result[direction] = "×";
+    }
+  }
+
+  return result;
+}
+
+
+/* ---------- 年盤の方位状態 ---------- */
+
+function getYearDirectionStatuses(
+  honmeiNumber,
+  yearStarNumber,
+  yearBranch
+) {
+
+  return getDirectionStatuses(
+    honmeiNumber,
+    yearStarNumber,
+    yearBranch
+  );
+}
 /* ---------- 月の節入り角度 ---------- */
 
 const monthAngles = {
@@ -767,6 +1117,13 @@ function checkDirection() {
   const yearData =
     getTargetYearData(targetDate);
 
+  const yearDirections =
+  getYearDirectionStatuses(
+    honmei.number,
+    yearData.star.number,
+    yearData.kanshi.branch
+  );
+  
   const monthData =
     getTargetMonthData(targetDate);
  
@@ -798,6 +1155,12 @@ function checkDirection() {
       <strong>干支：</strong>
       ${yearData.kanshi.name}
 
+<br><br>
+
+<strong>〇方位：</strong>
+${directions
+  .filter(direction => yearDirections[direction] === "〇")
+  .join("・")}
     </div>
 
     <div class="data-box">
