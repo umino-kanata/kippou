@@ -394,47 +394,40 @@ function getSetsuMonth(dateString){
 
 /* ---------- 月盤九星 ---------- */
 
-function getMonthStar(dateString){
-
-  const p=dateString.split("-");
-  const calendarYear=Number(p[0]);
+function getMonthKanshi(dateString){
 
   const setsu=getSetsuMonth(dateString);
 
-  let effectiveYear=calendarYear;
+  const effectiveYear=setsu.setsuYear;
+
+  const yearStem=
+    getYearKanshi(effectiveYear).stem;
+
+  const yearStemIndex=
+    stems.indexOf(yearStem);
 
   /*
-    1月節は前年の気学年
+    寅月の月干
+
+    甲・己年 → 丙
+    乙・庚年 → 戊
+    丙・辛年 → 庚
+    丁・壬年 → 壬
+    戊・癸年 → 甲
   */
 
-  if(setsu.setsuMonth===1){
-    effectiveYear=calendarYear-1;
-  }
-
-  /*
-    年盤九星から2月（寅月）の月盤を求める。
-
-    年盤：
-    一四七 → 2月＝八白
-    二五八 → 2月＝二黒
-    三六九 → 2月＝五黄
-  */
-
-  const yearStar=getYearStar(effectiveYear).number;
-
-  let febStar;
-
-  if([1,4,7].includes(yearStar)){
-    febStar=8;
-  }else if([2,5,8].includes(yearStar)){
-    febStar=2;
-  }else{
-    febStar=5;
-  }
-
-  /*
-    2月を0として月盤は逆行
-  */
+  const febStemStart = {
+    0:2,
+    5:2,
+    1:4,
+    6:4,
+    2:6,
+    7:6,
+    3:8,
+    8:8,
+    4:0,
+    9:0
+  };
 
   let distance;
 
@@ -444,18 +437,20 @@ function getMonthStar(dateString){
     distance=11;
   }
 
-  let number=febStar-distance;
+  const stemIndex=
+    (febStemStart[yearStemIndex]+distance)%10;
 
-  while(number<=0){
-    number+=9;
-  }
+  const branchIndex=
+    (2+distance)%12;
 
   return {
-    number:number,
-    name:starNames[number]
+    stem:stems[stemIndex],
+    branch:branches[branchIndex],
+    name:
+      stems[stemIndex]+
+      branches[branchIndex]
   };
 }
-
 
 /* ---------- 月干支 ---------- */
 
