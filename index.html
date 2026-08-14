@@ -70,32 +70,45 @@
     .honmei {
       font-size: 24px;
       font-weight: bold;
-      margin: 10px 0;
+      margin: 8px 0 16px;
+    }
+
+    .year-box {
+      margin-top: 18px;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+    }
+
+    .year-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 8px;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
+<div class="container">
 
-    <h1>吉方位を調べる</h1>
+  <h1>吉方位を調べる</h1>
 
-    <p>生年月日と調べたい日を入力してください</p>
+  <p>生年月日と調べたい日を入力してください</p>
 
-    <label for="birthday">生年月日</label>
-    <input type="date" id="birthday">
+  <label for="birthday">生年月日</label>
+  <input type="date" id="birthday">
 
-    <label for="targetDate">吉方位を調べたい日</label>
-    <input type="date" id="targetDate">
+  <label for="targetDate">吉方位を調べたい日</label>
+  <input type="date" id="targetDate">
 
-    <button onclick="checkDirection()">
-      吉方位を調べる
-    </button>
+  <button onclick="checkDirection()">
+    吉方位を調べる
+  </button>
 
-    <div id="result"></div>
+  <div id="result"></div>
 
-  </div>
+</div>
 
 <script>
 
@@ -111,10 +124,18 @@ const starNames = {
   9: "九紫火星"
 };
 
+const stems = [
+  "甲", "乙", "丙", "丁", "戊",
+  "己", "庚", "辛", "壬", "癸"
+];
 
-/* ------------------------------
-   日時 → ユリウス日
------------------------------- */
+const branches = [
+  "子", "丑", "寅", "卯", "辰", "巳",
+  "午", "未", "申", "酉", "戌", "亥"
+];
+
+
+/* 日時 → ユリウス日 */
 
 function toJulianDay(date) {
 
@@ -143,9 +164,7 @@ function toJulianDay(date) {
 }
 
 
-/* ------------------------------
-   太陽の視黄経を求める
------------------------------- */
+/* 太陽の視黄経 */
 
 function solarLongitude(date) {
 
@@ -189,22 +208,14 @@ function solarLongitude(date) {
 }
 
 
-/* ------------------------------
-   角度差
------------------------------- */
+/* 角度差 */
 
 function angleDifference(angle, target) {
-
-  return (
-    ((angle - target + 540) % 360) - 180
-  );
+  return ((angle - target + 540) % 360) - 180;
 }
 
 
-/* ------------------------------
-   その年の立春日時を求める
-   立春＝太陽黄経315°
------------------------------- */
+/* その年の立春を計算 */
 
 function getRisshun(year) {
 
@@ -238,9 +249,7 @@ function getRisshun(year) {
 }
 
 
-/* ------------------------------
-   日本時間で立春の日付を取得
------------------------------- */
+/* 日本時間で立春の日付 */
 
 function getRisshunDateJST(year) {
 
@@ -260,14 +269,11 @@ function getRisshunDateJST(year) {
 }
 
 
-/* ------------------------------
-   本命星判定
------------------------------- */
+/* その日が立春前か判定 */
 
-function getHonmeiStar(dateString) {
+function getEffectiveYear(dateString) {
 
-  const parts =
-    dateString.split("-");
+  const parts = dateString.split("-");
 
   let year = Number(parts[0]);
   const month = Number(parts[1]);
@@ -275,11 +281,6 @@ function getHonmeiStar(dateString) {
 
   const risshun =
     getRisshunDateJST(year);
-
-  /*
-    立春の日より前なら
-    前年として本命星を計算
-  */
 
   if (
     month < risshun.month ||
@@ -291,10 +292,16 @@ function getHonmeiStar(dateString) {
     year--;
   }
 
-  /*
-    2026年＝一白水星を基準に
-    9年周期で計算
-  */
+  return {
+    year: year,
+    risshun: risshun
+  };
+}
+
+
+/* 九星を計算 */
+
+function getYearStar(year) {
 
   const offset =
     ((2026 - year) % 9 + 9) % 9;
@@ -304,15 +311,74 @@ function getHonmeiStar(dateString) {
 
   return {
     number: starNumber,
-    name: starNames[starNumber],
-    risshun: risshun
+    name: starNames[starNumber]
   };
 }
 
 
-/* ------------------------------
-   ボタン処理
------------------------------- */
+/* 年干支を計算
+   1984年＝甲子を基準
+*/
+
+function getYearKanshi(year) {
+
+  const stemIndex =
+    ((year - 1984) % 10 + 10) % 10;
+
+  const branchIndex =
+    ((year - 1984) % 12 + 12) % 12;
+
+  return {
+    stem: stems[stemIndex],
+    branch: branches[branchIndex],
+    name:
+      stems[stemIndex]
+      + branches[branchIndex]
+  };
+}
+
+
+/* 本命星 */
+
+function getHonmeiStar(dateString) {
+
+  const effective =
+    getEffectiveYear(dateString);
+
+  const star =
+    getYearStar(effective.year);
+
+  return {
+    number: star.number,
+    name: star.name,
+    risshun: effective.risshun
+  };
+}
+
+
+/* 調べたい日の年盤 */
+
+function getTargetYearData(dateString) {
+
+  const effective =
+    getEffectiveYear(dateString);
+
+  const star =
+    getYearStar(effective.year);
+
+  const kanshi =
+    getYearKanshi(effective.year);
+
+  return {
+    year: effective.year,
+    star: star,
+    kanshi: kanshi,
+    risshun: effective.risshun
+  };
+}
+
+
+/* ボタン処理 */
 
 function checkDirection() {
 
@@ -338,6 +404,9 @@ function checkDirection() {
   const honmei =
     getHonmeiStar(birthday);
 
+  const yearData =
+    getTargetYearData(targetDate);
+
   result.style.display = "block";
 
   result.innerHTML = `
@@ -351,16 +420,26 @@ function checkDirection() {
       ${honmei.name}
     </div>
 
-    <strong>その年の立春：</strong>
-    ${honmei.risshun.month}月
-    ${honmei.risshun.day}日
+    <div class="year-box">
 
-    <br><br>
+      <div class="year-title">
+        ${targetDate} の年盤
+      </div>
 
-    <strong>調べたい日：</strong>
-    ${targetDate}
+      <strong>年盤九星：</strong>
+      ${yearData.star.name}
+      <br>
 
-    <br><br>
+      <strong>年干支：</strong>
+      ${yearData.kanshi.name}
+      <br>
+
+      <strong>年支：</strong>
+      ${yearData.kanshi.branch}
+
+    </div>
+
+    <br>
 
     吉方位の計算機能は、
     これから追加します。
@@ -371,4 +450,4 @@ function checkDirection() {
 </script>
 
 </body>
-</html>  
+</html>
